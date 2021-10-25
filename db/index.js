@@ -123,9 +123,8 @@ async function _getReport(reportId) {
       `
   SELECT * 
   FROM reports
-  WHERE "id" = ${reportId}
-  `
-    );
+  WHERE "id"=$1
+  `,[reportId]);
 
     // SELECT the report with id equal to reportId
     // return the report
@@ -200,7 +199,7 @@ async function createReportComment(reportId, commentFields) {
       throw Error("That report does not exist, no comment has been made");
     }
     // if it is not open, throw an error saying so
-    if (!report.isOpen) {
+    if (report.isOpen === false) {
       throw Error("That report has been closed, no comment has been made");
     }
     // if the current date is past the expiration, throw an error saying so
@@ -214,16 +213,16 @@ async function createReportComment(reportId, commentFields) {
       rows: [comment],
     } = await client.query(
       `
-      INSERT INTO comments(content)
-      VALUES ($1)
+      INSERT INTO comments(content, "reportId")
+      VALUES ($1, $2)
       RETURNING *;
       `,
-      [content]
+      [content, reportId]
     );
     await client.query(
       `
       UPDATE reports
-      SET "expirationDate" = CURRENT_TIMESTAMP - interval '1 days'
+      SET "expirationDate" = CURRENT_TIMESTAMP + interval '1 days'
       WHERE id=$1
       RETURNING *
      `,[reportId],

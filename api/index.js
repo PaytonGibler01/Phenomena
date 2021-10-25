@@ -103,24 +103,20 @@ apiRouter.post("/reports", async (req, res, next) => {
  * - on success, it should send back the object returned by createReportComment
  * - on caught error, call next(error)
  */
-    apiRouter.post("/api/reports/:reportId/comments", async(req, res, next)=>{
-        const {reportId, fields} = req.body
+    apiRouter.post("/reports/:reportId/comments", async(req, res, next)=>{
         try {
-            const comment = await createReportComment({reportId, fields});
-            // if(comment){
-            //     res.send(comment)
-            // } else{
-            //     next({
-            //         name: 'comment error',
-            //         message: 'problem with /api/reports/:id/comments'
-            //       })
-            // }
-            res.send(comment)
-        } catch (error) {
-            next(error)
+            const comment = await createReportComment(req.params.reportId, req.body);
+             if(comment){
+                 res.send(comment)
+
+             } else{
+                 next({
+                     name: 'comment error',
+                     message: 'problem with /api/reports/:id/comments'
+                   })
+             }
+        } catch ({name, message}) {
+            next({name, message})
         }
     })
-
-
-// Export the apiRouter
 module.exports = apiRouter;
